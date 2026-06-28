@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-powered Question Answering Assistant for legal documents. Upload PDF or DOCX files and ask questions using RAG.">
+    <title>DocuMind AI — Document QA Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="app-container" id="app">
+        <!-- ─── Sidebar ────────────────────────────────────────── -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>DocuMind</h1>
+                        <span class="logo-badge">AI</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Document Info Panel -->
+            <div class="document-panel" id="document-panel" style="display: none;">
+                <div class="panel-label">Active Document</div>
+                <div class="document-card" id="document-card">
+                    <div class="doc-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                    </div>
+                    <div class="doc-info">
+                        <span class="doc-name" id="doc-name"></span>
+                        <span class="doc-meta" id="doc-meta"></span>
+                    </div>
+                </div>
+                <div class="document-summary" id="document-summary">
+                    <div class="panel-label">Summary</div>
+                    <p id="summary-text"></p>
+                </div>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="upload-section" id="upload-section">
+                <div class="panel-label">Upload Document</div>
+                <div class="upload-zone" id="upload-zone">
+                    <div class="upload-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <p class="upload-text">Drag & drop your file here</p>
+                    <p class="upload-subtext">or click to browse</p>
+                    <p class="upload-formats">PDF, DOCX • Max 50MB</p>
+                    <input type="file" id="file-input" accept=".pdf,.docx" hidden>
+                </div>
+                <div class="upload-progress" id="upload-progress" style="display: none;">
+                    <div class="progress-info">
+                        <span id="upload-filename"></span>
+                        <span id="upload-status">Uploading...</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="footer-links">
+                    <a href="/docs" target="_blank" class="footer-link">API Docs</a>
+                    <span class="footer-dot">•</span>
+                    <a href="/health" target="_blank" class="footer-link">Health</a>
+                </div>
+                <p class="footer-version">v1.0.0 • Powered by Groq + FAISS</p>
+            </div>
+        </aside>
+
+        <!-- ─── Main Chat Area ────────────────────────────────── -->
+        <main class="main-content">
+            <!-- Chat Header -->
+            <header class="chat-header">
+                <button class="menu-toggle" id="menu-toggle" aria-label="Toggle sidebar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+                <div class="header-info">
+                    <h2 id="header-title">Document QA Assistant</h2>
+                    <span class="header-status" id="header-status">Upload a document to begin</span>
+                </div>
+            </header>
+
+            <!-- Chat Messages -->
+            <div class="chat-container" id="chat-container">
+                <!-- Welcome State -->
+                <div class="welcome-state" id="welcome-state">
+                    <div class="welcome-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                    </div>
+                    <h2 class="welcome-title">Ask anything about your document</h2>
+                    <p class="welcome-subtitle">Upload a PDF or DOCX file to get started. I'll answer your questions using only the content from your document.</p>
+                    <div class="sample-questions" id="sample-questions">
+                        <p class="sample-label">Try asking:</p>
+                        <div class="sample-chips">
+                            <button class="sample-chip" data-question="What is the termination clause?">What is the termination clause?</button>
+                            <button class="sample-chip" data-question="Who are the contracting parties?">Who are the contracting parties?</button>
+                            <button class="sample-chip" data-question="Summarize the agreement">Summarize the agreement</button>
+                            <button class="sample-chip" data-question="What payment terms are defined?">What payment terms are defined?</button>
+                            <button class="sample-chip" data-question="What are the confidentiality obligations?">What are the confidentiality obligations?</button>
+                            <button class="sample-chip" data-question="When does the agreement expire?">When does the agreement expire?</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Container -->
+                <div class="messages" id="messages"></div>
+            </div>
+
+            <!-- Sources Panel (slides up) -->
+            <div class="sources-panel" id="sources-panel" style="display: none;">
+                <div class="sources-header">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span>Sources</span>
+                    <button class="sources-close" id="sources-close" aria-label="Close sources">×</button>
+                </div>
+                <div class="sources-list" id="sources-list"></div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="chat-input-area" id="chat-input-area">
+                <!-- Follow-up Suggestions -->
+                <div class="follow-up-chips" id="follow-up-chips" style="display: none;"></div>
+
+                <form class="chat-form" id="chat-form">
+                    <div class="input-wrapper">
+                        <textarea
+                            id="question-input"
+                            placeholder="Ask a question about your document..."
+                            rows="1"
+                            disabled
+                            aria-label="Question input"
+                        ></textarea>
+                        <button type="submit" class="send-button" id="send-button" disabled aria-label="Send message">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
