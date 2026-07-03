@@ -9,6 +9,7 @@ pattern for loose coupling and testability.
 from functools import lru_cache
 
 from app.config import Settings, get_settings
+from app.services.job_service import JobService
 from app.domain.interfaces.llm_provider import LLMProvider
 from app.infrastructure.embeddings.sentence_transformer_embeddings import (
     SentenceTransformerEmbeddings,
@@ -90,6 +91,11 @@ def get_conversation_service() -> ConversationService:
         conversation_repository=get_conversation_repository(),
     )
 
+
+@lru_cache()
+def get_job_service() -> JobService:
+    """Get the singleton job service."""
+    return JobService()
 
 @lru_cache()
 def get_document_service() -> DocumentService:

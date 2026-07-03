@@ -86,3 +86,28 @@ class ErrorResponse(BaseModel):
 
     detail: str = Field(..., description="Error description")
     error_code: str = Field("UNKNOWN_ERROR", description="Machine-readable error code")
+
+# ─── Job Schemas ────────────────────────────────────────────────────
+
+class JobCreateRequest(BaseModel):
+    """Request schema for creating a new interview job."""
+
+    title: str = Field(..., description="Job title")
+    seniority: str = Field(..., description="Seniority level required")
+    description: str = Field(..., description="Job description")
+
+class JobResponse(BaseModel):
+    """Response schema representing a job."""
+
+    job_id: str = Field(..., description="Unique identifier of the job")
+    title: str = Field(..., description="Job title")
+    seniority: str = Field(..., description="Seniority level")
+    description: str = Field(..., description="Job description")
+    status: str = Field(..., description="Current job status")
+    created_at: str = Field(..., description="ISO timestamp when job was created")
+
+class JobListResponse(BaseModel):
+    """Wrapper for returning a list of jobs."""
+
+    jobs: list[JobResponse]
+

@@ -13,7 +13,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api.routes import chat, history, upload
+from app.api.routes import chat, history, upload, jobs
 from app.config import get_settings
 from app.utils.logging import RequestLoggingMiddleware, setup_logging
 
@@ -78,6 +78,7 @@ def create_app() -> FastAPI:
 
     # ─── Routes ───────────────────────────────────────────────────
     app.include_router(upload.router)
+    app.include_router(jobs.router)
     app.include_router(chat.router)
     app.include_router(history.router)
 
