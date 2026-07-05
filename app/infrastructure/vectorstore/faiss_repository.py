@@ -65,16 +65,23 @@ class FAISSRepository(VectorRepository):
             embedding_matrix = np.array(embeddings, dtype=np.float32)
             dimension = embedding_matrix.shape[1]
 
-            # Use Inner Product for cosine similarity (vectors are normalized)
-            index = faiss.IndexFlatIP(dimension)
-            index.add(embedding_matrix)
-
-            self._indices[document_id] = (index, chunks)
-
-            logger.info(
-                f"Indexed document {document_id}: "
-                f"{len(chunks)} chunks, dimension={dimension}"
-            )
+            if document_id in self._indices:
+                index, existing_chunks = self._indices[document_id]
+                index.add(embedding_matrix)
+                existing_chunks.extend(chunks)
+                logger.info(
+                    f"Appended to document {document_id}: "
+                    f"{len(chunks)} new chunks (total {len(existing_chunks)}), dimension={dimension}"
+                )
+            else:
+                # Use Inner Product for cosine similarity (vectors are normalized)
+                index = faiss.IndexFlatIP(dimension)
+                index.add(embedding_matrix)
+                self._indices[document_id] = (index, chunks)
+                logger.info(
+                    f"Indexed document {document_id}: "
+                    f"{len(chunks)} chunks, dimension={dimension}"
+                )
 
         except Exception as exc:
             logger.error(
@@ -82,7 +89,7 @@ class FAISSRepository(VectorRepository):
                 exc_info=True,
             )
             raise RuntimeError(
-                f"Failed to create FAISS index: {exc}"
+                f"Failed to create or update FAISS index: {exc}"
             ) from exc
 
     def search(

@@ -19,6 +19,11 @@ class JobStatus(str, Enum):
     PROCESSING = "processing"
     READY = "ready"
     FAILED = "failed"
+    DRAFT = "Draft"
+    OPEN = "Open"
+    PAUSED = "Paused"
+    CLOSED = "Closed"
+    FILLED = "Filled"
 
 
 @dataclass
@@ -32,6 +37,16 @@ class Job:
     status: JobStatus = JobStatus.CREATED
     # optional fields for future extensions
     metadata: Dict[str, str] = field(default_factory=dict)
+    # new fields for UI
+    department: str = ""
+    location: str = ""
+    remote_mode: str = ""
+    applicants: int = 0
+    ai_screened: int = 0
+    interviewing: int = 0
+    skills: List[str] = field(default_factory=list)
+    ai_match_score: float = 0.0
+    hiring_progress: float = 0.0
 
 
 @dataclass

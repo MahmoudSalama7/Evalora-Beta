@@ -6,7 +6,7 @@ external clients. They are separate from domain models.
 """
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 from pydantic import BaseModel, Field
 
@@ -95,6 +95,15 @@ class JobCreateRequest(BaseModel):
     title: str = Field(..., description="Job title")
     seniority: str = Field(..., description="Seniority level required")
     description: str = Field(..., description="Job description")
+    department: str = Field("", description="Department or business unit")
+    location: str = Field("", description="Location (city) of the role")
+    remote_mode: str = Field("", description="Remote/Hybrid/Onsite")
+    applicants: int = Field(0, description="Number of applicants")
+    ai_screened: int = Field(0, description="AI screened count")
+    interviewing: int = Field(0, description="Interviewing count")
+    skills: List[str] = Field(default_factory=list, description="Required skills list")
+    ai_match_score: float = Field(0.0, description="AI match percentage")
+    hiring_progress: float = Field(0.0, description="Hiring funnel progress percent")
 
 class JobResponse(BaseModel):
     """Response schema representing a job."""
@@ -105,6 +114,15 @@ class JobResponse(BaseModel):
     description: str = Field(..., description="Job description")
     status: str = Field(..., description="Current job status")
     created_at: str = Field(..., description="ISO timestamp when job was created")
+    department: str = Field("", description="Department or business unit")
+    location: str = Field("", description="Location (city) of the role")
+    remote_mode: str = Field("", description="Remote/Hybrid/Onsite")
+    applicants: int = Field(0, description="Number of applicants")
+    ai_screened: int = Field(0, description="AI screened count")
+    interviewing: int = Field(0, description="Interviewing count")
+    skills: List[str] = Field(default_factory=list, description="Required skills list")
+    ai_match_score: float = Field(0.0, description="AI match percentage")
+    hiring_progress: float = Field(0.0, description="Hiring funnel progress percent")
 
 class JobListResponse(BaseModel):
     """Wrapper for returning a list of jobs."""
