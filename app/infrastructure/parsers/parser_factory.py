@@ -11,6 +11,7 @@ from pathlib import Path
 from app.domain.interfaces.parser import DocumentParser
 from app.infrastructure.parsers.docx_parser import DOCXParser
 from app.infrastructure.parsers.pdf_parser import PDFParser
+from app.infrastructure.parsers.txt_parser import TXTParser
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,8 @@ class ParserFactory:
     _parsers: dict[str, DocumentParser] = {
         ".pdf": PDFParser(),
         ".docx": DOCXParser(),
+        ".txt": TXTParser(),
+        ".md": TXTParser(),
     }
 
     @classmethod

@@ -70,6 +70,7 @@ class DocumentService:
         self,
         filename: str,
         file_content: bytes,
+        job_id: str | None = None,
     ) -> Document:
         """
         Process and index an uploaded document.
@@ -77,6 +78,7 @@ class DocumentService:
         Args:
             filename: Original filename.
             file_content: Raw file bytes.
+            job_id: Optional parent job ID to also index against for job-level RAG.
 
         Returns:
             Document object with metadata and auto-summary.
@@ -122,6 +124,11 @@ class DocumentService:
         self._vector_store_service.index_document(
             document_id, chunks, embeddings
         )
+        if job_id:
+            # Also index under the job_id for unified RAG retrieve
+            self._vector_store_service.index_document(
+                job_id, chunks, embeddings
+            )
 
         # Step 6: Generate auto-summary
         summary = await self._generate_summary(pages)
