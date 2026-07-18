@@ -82,15 +82,17 @@ def create_app() -> FastAPI:
     app.include_router(chat.router)
     app.include_router(history.router)
 
-    # ─── Static Files (Frontend) ──────────────────────────────────
-    frontend_dir = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)), "frontend"
+    # ─── Static Files (Frontend — Vite Build) ────────────────────
+    frontend_dist_dir = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "frontend", "dist"
     )
-    if os.path.isdir(frontend_dir):
+    frontend_assets_dir = os.path.join(frontend_dist_dir, "assets")
+
+    if os.path.isdir(frontend_assets_dir):
         app.mount(
-            "/static",
-            StaticFiles(directory=frontend_dir),
-            name="static",
+            "/assets",
+            StaticFiles(directory=frontend_assets_dir),
+            name="assets",
         )
 
     # ─── Health Check ─────────────────────────────────────────────
@@ -99,16 +101,27 @@ def create_app() -> FastAPI:
         """Health check endpoint."""
         return {"status": "healthy", "version": "1.0.0"}
 
-    # ─── Root → Serve Frontend ────────────────────────────────────
+    # ─── SPA Catch-All → Serve index.html for client-side routing ─
     from fastapi.responses import FileResponse
 
-    @app.get("/", include_in_schema=False)
-    async def serve_frontend():
-        """Serve the frontend application."""
-        index_path = os.path.join(frontend_dir, "index.html")
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str):
+        """
+        Serve the React SPA.
+
+        For any route not matched by API endpoints, return index.html
+        so React Router can handle client-side navigation.
+        """
+        # Check if a specific static file exists in dist/
+        file_path = os.path.join(frontend_dist_dir, full_path)
+        if full_path and os.path.isfile(file_path):
+            return FileResponse(file_path)
+
+        # Otherwise, serve index.html for SPA routing
+        index_path = os.path.join(frontend_dist_dir, "index.html")
         if os.path.exists(index_path):
             return FileResponse(index_path)
-        return {"message": "Document QA Assistant API", "docs": "/docs"}
+        return {"message": "Evalora AI API", "docs": "/docs"}
 
     return app
 
